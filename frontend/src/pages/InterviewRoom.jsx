@@ -55,6 +55,7 @@ const InterviewRoom = () => {
       otherPeerId.current = senderId;
       await ensureMedia();
       createPeerConnection();
+      addLocalTracks();
       await pc.current.setRemoteDescription(new RTCSessionDescription(sdp));
       const answer = await pc.current.createAnswer();
       await pc.current.setLocalDescription(answer);
@@ -114,10 +115,17 @@ const InterviewRoom = () => {
       console.log('Received remote stream');
       if (remoteVideo.current) remoteVideo.current.srcObject = e.streams[0];
     };
+  }
 
-    if (localStream.current) {
-      localStream.current.getTracks().forEach(track => pc.current.addTrack(track, localStream.current));
-    }
+  // Helper to add local tracks only once
+  function addLocalTracks() {
+    if (!pc.current || !localStream.current) return;
+    const senders = pc.current.getSenders();
+    localStream.current.getTracks().forEach(track => {
+      if (!senders.find(sender => sender.track === track)) {
+        pc.current.addTrack(track, localStream.current);
+      }
+    });
   }
 
   async function startCall() {
@@ -127,6 +135,7 @@ const InterviewRoom = () => {
     }
     await ensureMedia();
     createPeerConnection();
+    addLocalTracks();
     const offer = await pc.current.createOffer();
     await pc.current.setLocalDescription(offer);
     socket.emit('offer', { targetId: otherPeerId.current, sdp: offer });
