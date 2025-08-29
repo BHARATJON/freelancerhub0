@@ -22,6 +22,7 @@ import ScheduledInterviews from './pages/ScheduledInterviews'
 import ProtectedRoute from './components/ProtectedRoute'
 import Payment from './pages/Payment';
 import TransactionHistory from './pages/TransactionHistory';
+import Jobs from './pages/Jobs';
 import { useEffect } from 'react' // Import useEffect
 
 function App() {
@@ -132,6 +133,7 @@ function App() {
               <TransactionHistory />
             </ProtectedRoute>
           } />
+          <Route path="/jobs" element={<Jobs />} />
         </Routes>
       </main>
       <Footer />

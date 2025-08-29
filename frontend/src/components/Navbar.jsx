@@ -56,6 +56,9 @@ const Navbar = () => {
                 <Link to={getDashboardLink()} className="text-gray-700 hover:text-primary-600 transition-colors">
                   Dashboard
                 </Link>
+                <Link to="/jobs" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  Jobs
+                </Link>
                 <Link to="/scheduled-interviews" className="text-gray-700 hover:text-primary-600 transition-colors flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
                   <span>Scheduled Interviews</span>
@@ -137,6 +140,13 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
+                </Link>
+                <Link
+                  to="/jobs"
+                  className="block px-3 py-2 text-gray-700 hover:text-primary-600 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Jobs
                 </Link>
                 <Link
                   to="/scheduled-interviews"

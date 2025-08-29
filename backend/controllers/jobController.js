@@ -29,7 +29,7 @@ exports.createJob = async (req, res) => {
 
 exports.listJobs = async (req, res) => {
   try {
-    const jobs = await Job.find().populate('company', 'name');
+    const jobs = await Job.find({ $or: [{ status: 'active' }, { status: { $exists: false } }] }).populate('company', 'name');
     res.status(200).json(jobs);
   } catch (error) {
     console.error('List jobs error:', error);
@@ -42,7 +42,7 @@ exports.getJobDetails = async (req, res) => {
     return res.status(400).json({ message: 'Invalid job ID' });
   }
   try {
-    const job = await Job.findById(req.params.id).populate('company', 'name');
+    const job = await Job.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true }).populate('company', 'name');
     if (!job) return res.status(404).json({ message: 'Job not found' });
     res.status(200).json(job);
   } catch (error) {

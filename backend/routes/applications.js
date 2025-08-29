@@ -39,6 +39,10 @@ router.post('/apply/:jobId', auth, roleCheck(['freelancer']), async (req, res) =
 
     await application.save();
 
+    // Update job with new application
+    job.applications.push(application._id);
+    await job.save();
+
     // Notify company via socket
     const io = req.app.get('io');
     io.to(job.company.toString()).emit('new-application', {
