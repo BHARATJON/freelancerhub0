@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, Briefcase } from 'lucide-react';
+import { MapPin, Clock, IndianRupee, Briefcase } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 const JobCard = ({ job, onComplete }) => {
@@ -75,7 +75,7 @@ const JobCard = ({ job, onComplete }) => {
         {/* Job Details */}
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center text-gray-600">
-            <DollarSign className="w-4 h-4 mr-2" />
+            <IndianRupee className="w-4 h-4 mr-2" />
             <span>₹{job.budget}</span>
           </div>
           <div className="flex items-center text-gray-600">
