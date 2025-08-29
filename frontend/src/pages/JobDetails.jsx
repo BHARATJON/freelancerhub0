@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { 
   MapPin, 
   Clock, 
@@ -11,343 +11,251 @@ import {
   Star,
   Users,
   Globe
-} from 'lucide-react'
-import { useAuthStore } from '../stores/authStore'
-import api from '../utils/api'
+} from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
+import api from '../utils/api';
 
 const JobDetails = () => {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const [job, setJob] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isApplying, setIsApplying] = useState(false)
-  const [showApplyModal, setShowApplyModal] = useState(false)
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const [job, setJob] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isApplying, setIsApplying] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
     proposedRate: '',
     timeline: ''
-  })
-
-  useEffect(() => {
-    fetchJobDetails()
-  }, [id])
+  });
+  const [applications, setApplications] = useState([]);
+  const [applicants, setApplicants] = useState([]);
 
   const fetchJobDetails = async () => {
     try {
-      const response = await api.get(`/jobs/${id}`)
-      setJob(response.data)
+      const response = await api.get(`/jobs/${id}`);
+      setJob(response.data);
     } catch (error) {
-      toast.error('Failed to load job details')
-      navigate('/')
-    } finally {
-      setIsLoading(false)
+      toast.error('Failed to load job details');
+      navigate('/');
     }
-  }
+  };
+
+  const fetchFreelancerApplications = async () => {
+    if (user?.role === 'freelancer') {
+      try {
+        const response = await api.get('/applications');
+        setApplications(response.data);
+      } catch (error) {
+        console.error('Failed to load applications', error);
+      }
+    }
+  };
+
+  const fetchJobApplicants = async () => {
+    if (user?.role === 'company' && job && user.id === job.company._id) {
+      try {
+        const response = await api.get(`/jobs/${id}/applications`);
+        setApplicants(response.data);
+      } catch (error) {
+        console.error('Failed to load applicants', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchJobDetails();
+    if (user?.role === 'freelancer') {
+      fetchFreelancerApplications();
+    }
+    setIsLoading(false);
+  }, [id, user]);
+
+  useEffect(() => {
+    if (job) {
+      fetchJobApplicants();
+    }
+  }, [job, user]);
 
   const handleApply = async (e) => {
-    e.preventDefault()
-    setIsApplying(true)
+    e.preventDefault();
+    setIsApplying(true);
 
     try {
-      await api.post(`/applications/apply/${id}`, applicationData)
-      toast.success('Application submitted successfully!')
-      setShowApplyModal(false)
-      navigate('/freelancer/dashboard')
+      await api.post(`/applications/apply/${id}`, applicationData);
+      toast.success('Application submitted successfully!');
+      setShowApplyModal(false);
+      fetchFreelancerApplications(); // Refresh applications
     } catch (error) {
-      toast.error('Failed to submit application')
+      toast.error('Failed to submit application');
     } finally {
-      setIsApplying(false)
+      setIsApplying(false);
     }
+  };
+
+  if (isLoading || !job) {
+    return <div>Loading...</div>;
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    )
-  }
-
-  if (!job) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h2>
-          <p className="text-gray-600">The job you're looking for doesn't exist.</p>
-        </div>
-      </div>
-    )
-  }
+  const hasApplied = applications.some(app => app.job?._id === id);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Job Header */}
         <div className="card mb-6">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
-              <div className="flex items-center space-x-4 text-gray-600">
-                <span className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {job.location}
-                </span>
-                <span className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  {job.duration}
-                </span>
-                <span className="flex items-center">
-                  <DollarSign className="w-4 h-4 mr-1" />
-                  ${job.budget}
-                </span>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                job.status === 'active' ? 'bg-green-100 text-green-800' :
-                job.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {job.status}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                job.experienceLevel === 'beginner' ? 'bg-green-100 text-green-800' :
-                job.experienceLevel === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
-                {job.experienceLevel}
-              </span>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
+          <div className="flex items-center text-sm text-gray-500 mb-4">
+            <span className="flex items-center mr-4">
+              <Briefcase className="w-4 h-4 mr-1" />
+              {job.company.name}
+            </span>
+            <span className="flex items-center mr-4">
+              <MapPin className="w-4 h-4 mr-1" />
+              {job.location} {job.remote && '(Remote)'}
+            </span>
+            <span className="flex items-center mr-4">
+              <Clock className="w-4 h-4 mr-1" />
+              {job.type}
+            </span>
+            <span className="flex items-center">
+              <DollarSign className="w-4 h-4 mr-1" />
+              {`${job.budget}`} ({job.budgetType})
+            </span>
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Job Description</h2>
+            <p className="text-gray-600 whitespace-pre-wrap">{job.description}</p>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Requirements</h3>
+            <ul className="list-disc list-inside space-y-1 text-gray-600">
+              {job.requirements.map((req, index) => (
+                <li key={index}>{req}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Skills</h3>
+            <div className="flex flex-wrap gap-2">
+              {job.skills.map((skill, index) => (
+                <span key={index} className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm">{skill}</span>
+              ))}
             </div>
           </div>
 
-          {/* Company Info */}
-          {job.company && (
-            <div className="flex items-center p-4 bg-gray-50 rounded-lg mb-6">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                <span className="text-primary-600 font-semibold text-lg">
-                  {job.company.name?.charAt(0) || job.company.companyName?.charAt(0) || 'C'}
-                </span>
-              </div>
-              <div className="ml-4 flex-1">
-                <h3 className="font-semibold text-gray-900">
-                  {job.company.name || job.company.companyName}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Posted {new Date(job.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="text-sm text-gray-600">
-                  {job.company.rating || 0}/5
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex space-x-2">
-            {user?.role === 'freelancer' && (
-              <button
-                onClick={() => setShowApplyModal(true)}
-                className="btn-primary"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Apply for this Job
-              </button>
-            )}
-            {user?.role === 'company' && job.company?._id === user.id && (
-              <Link
-                to={`/job/${job._id}/applications`}
-                className="btn-outline"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                View Applications ({job.applicationsCount || 0})
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Job Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Description */}
-            <div className="card">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
-              <div className="prose max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
-              </div>
-            </div>
-
-            {/* Requirements */}
-            <div className="card">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
-              <ul className="space-y-2">
-                {job.requirements.map((req, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="w-2 h-2 bg-primary-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                    <span className="text-gray-700">{req}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Skills */}
-            <div className="card">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Required Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {job.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Job Summary */}
-            <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Job Summary</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Budget</span>
-                  <span className="font-semibold">${job.budget}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-gray-200 pt-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Project Details</h3>
+              <div className="space-y-2 text-gray-600">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 text-primary-500" />
+                  <span>Duration: <strong>{job.duration.replace(/-/g, ' ')}</strong></span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Duration</span>
-                  <span className="font-semibold">{job.duration}</span>
+                <div className="flex items-center">
+                  <Users className="w-4 h-4 mr-2 text-primary-500" />
+                  <span>Experience: <strong>{job.experienceLevel}</strong></span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Job Type</span>
-                  <span className="font-semibold capitalize">{job.type}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Experience</span>
-                  <span className="font-semibold capitalize">{job.experienceLevel}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Location</span>
-                  <span className="font-semibold">{job.location}</span>
-                </div>
-                {job.remote && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Remote</span>
-                    <span className="font-semibold text-green-600">Yes</span>
+                {job.deadline && (
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-primary-500" />
+                    <span>Deadline: <strong>{new Date(job.deadline).toLocaleDateString()}</strong></span>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Company Details */}
-            {job.company && (
-              <div className="card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">About the Company</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-600">
-                      {job.company.size} employees
-                    </span>
-                  </div>
-                  {job.company.website && (
-                    <div className="flex items-center">
-                      <Globe className="w-4 h-4 text-gray-400 mr-2" />
-                      <a
-                        href={job.company.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary-600 hover:text-primary-700"
-                      >
-                        Visit Website
-                      </a>
+            <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">About the Company</h3>
+                <div className="flex items-center">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                        <Globe className="w-6 h-6 text-primary-600" />
                     </div>
-                  )}
-                  {job.company.description && (
-                    <p className="text-sm text-gray-600">
-                      {job.company.description}
-                    </p>
-                  )}
+                    <div>
+                        <p className="font-semibold text-gray-800">{job.company.name}</p>
+                        <p className="text-sm text-gray-500">{job.company.email}</p>
+                    </div>
                 </div>
-              </div>
+            </div>
+          </div>
+          {user?.role === 'freelancer' && job.status === 'active' && !hasApplied && (
+            <button onClick={() => setShowApplyModal(true)} className="btn-primary mt-4">
+              <Send className="w-4 h-4 mr-2" />
+              Apply for this Job
+            </button>
+          )}
+           {user?.role === 'freelancer' && hasApplied && (
+            <p className="text-green-600 font-semibold mt-4">You have already applied for this job.</p>
+          )}
+        </div>
+
+        {user?.role === 'company' && user.id === job.company._id && (
+          <div className="card mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Applicants</h2>
+            {applicants.length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {applicants.map(applicant => (
+                  <li key={applicant._id} className="py-3 flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{applicant.freelancer.name}</p>
+                      <p className="text-sm text-gray-500">{applicant.freelancer.email}</p>
+                    </div>
+                    <Link to={`/application/${applicant._id}`} className="btn-outline text-sm">View Application</Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No applicants yet.</p>
             )}
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Apply Modal */}
-      {showApplyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Apply for this Job</h2>
-            <form onSubmit={handleApply} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cover Letter
-                </label>
-                <textarea
-                  value={applicationData.coverLetter}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, coverLetter: e.target.value }))}
-                  rows={4}
-                  className="input-field"
-                  placeholder="Explain why you're the best fit for this job..."
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Proposed Rate ($/hr)
-                </label>
-                <input
-                  type="number"
-                  value={applicationData.proposedRate}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, proposedRate: e.target.value }))}
-                  className="input-field"
-                  placeholder="25"
-                  min="1"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Timeline
-                </label>
-                <input
-                  type="text"
-                  value={applicationData.timeline}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, timeline: e.target.value }))}
-                  className="input-field"
-                  placeholder="2-4 weeks"
-                  required
-                />
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowApplyModal(false)}
-                  className="btn-secondary flex-1"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isApplying}
-                  className="btn-primary flex-1"
-                >
-                  {isApplying ? 'Submitting...' : 'Submit Application'}
-                </button>
-              </div>
-            </form>
+        {(job.status === 'in-progress' || job.status === 'completed') && job.hiredFreelancer && (
+          <div className="card mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Selected Freelancer</h2>
+            <div className="flex items-center">
+                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <span className="text-primary-600 font-semibold text-lg">{job.hiredFreelancer.name.charAt(0)}</span>
+                </div>
+                <div className="ml-4">
+                    <p className="font-medium">{job.hiredFreelancer.name}</p>
+                    <p className="text-sm text-gray-500">{job.hiredFreelancer.email}</p>
+                </div>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  )
-}
+        )}
 
-export default JobDetails
+        {/* Apply Modal */}
+        {showApplyModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Apply for this Job</h2>
+              <form onSubmit={handleApply} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cover Letter</label>
+                  <textarea value={applicationData.coverLetter} onChange={(e) => setApplicationData(prev => ({ ...prev, coverLetter: e.target.value }))} rows={4} className="input-field" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Proposed Rate ($/hr)</label>
+                  <input type="number" value={applicationData.proposedRate} onChange={(e) => setApplicationData(prev => ({ ...prev, proposedRate: e.target.value }))} className="input-field" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Timeline</label>
+                  <input type="text" value={applicationData.timeline} onChange={(e) => setApplicationData(prev => ({ ...prev, timeline: e.target.value }))} className="input-field" required />
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <button type="button" onClick={() => setShowApplyModal(false)} className="btn-secondary flex-1">Cancel</button>
+                  <button type="submit" disabled={isApplying} className="btn-primary flex-1">{isApplying ? 'Submitting...' : 'Submit Application'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default JobDetails;

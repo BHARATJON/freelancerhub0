@@ -12,8 +12,12 @@ router.post('/', auth, roleCheck(['company']), jobController.createJob);
 router.get('/', jobController.listJobs);
 // List jobs posted by the logged-in company (company only)
 router.get('/company', auth, roleCheck(['company']), jobController.listCompanyJobs);
+// Get jobs for the logged-in freelancer (freelancer only)
+router.get('/my-jobs', auth, roleCheck(['freelancer']), jobController.getFreelancerJobs);
 // Get job details (public)
 router.get('/:id', jobController.getJobDetails);
+// Mark a job as completed (company only)
+router.put('/:id/complete', auth, roleCheck(['company']), jobController.completeJob);
 
 // Get applications for a job (company)
 router.get('/:id/applications', auth, roleCheck(['company']), async (req, res) => {

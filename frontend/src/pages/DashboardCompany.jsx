@@ -127,7 +127,7 @@ const DashboardCompany = () => {
               </div>
 
               <div className="space-y-4">
-                {jobs.slice(0, 5).map((job) => (
+                {jobs.filter(job => job.status === 'active').slice(0, 5).map((job) => (
                   <div key={job._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-gray-900">{job.title}</h3>
@@ -158,7 +158,7 @@ const DashboardCompany = () => {
                     </div>
                   </div>
                 ))}
-                {jobs.length === 0 && (
+                {jobs.filter(job => job.status === 'active').length === 0 && (
                   <div className="text-center py-8">
                     <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500">No active jobs yet</p>

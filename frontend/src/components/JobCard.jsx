@@ -1,32 +1,35 @@
-import { Link } from 'react-router-dom'
-import { MapPin, Clock, DollarSign, Calendar, Briefcase } from 'lucide-react'
+import { Link } from 'react-router-dom';
+import { MapPin, Clock, DollarSign, Briefcase } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
 
-const JobCard = ({ job, onApply, showApplyButton = true }) => {
+const JobCard = ({ job, onComplete }) => {
+  const { user } = useAuthStore();
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800';
       case 'in-progress':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800';
       case 'completed':
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800';
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
   const getExperienceColor = (level) => {
     switch (level) {
       case 'beginner':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800';
       case 'intermediate':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-yellow-100 text-yellow-800';
       case 'expert':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
   return (
     <div className="card-hover">
@@ -118,18 +121,18 @@ const JobCard = ({ job, onApply, showApplyButton = true }) => {
           >
             View Details
           </Link>
-          {showApplyButton && onApply && (
+          {user?.role === 'company' && job.status === 'in-progress' && job.company?._id === user.id && onComplete && (
             <button
-              onClick={() => onApply(job._id)}
+              onClick={() => onComplete(job._id)}
               className="btn-primary flex-1"
             >
-              Apply Now
+              Mark as Complete
             </button>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default JobCard 
+export default JobCard;

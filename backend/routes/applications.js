@@ -121,6 +121,10 @@ router.put('/status/:id', auth, roleCheck(['company']), async (req, res) => {
         break;
       case 'hired':
         application.hiredAt = new Date();
+        // Update the job
+        job.status = 'in-progress';
+        job.hiredFreelancer = application.freelancer;
+        await job.save();
         break;
       case 'rejected':
         application.rejectedAt = new Date();
