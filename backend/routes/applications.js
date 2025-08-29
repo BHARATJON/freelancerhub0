@@ -185,7 +185,7 @@ router.put('/status/:id', auth, roleCheck(['company']), async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const application = await Application.findById(req.params.id)
-      .populate('job')
+      .populate({ path: 'job', populate: { path: 'company' } })
       .populate('freelancer', 'name email')
       .populate('company', 'name companyName')
       .populate('interview');
@@ -195,28 +195,15 @@ router.get('/:id', auth, async (req, res) => {
     }
     
     // Check authorization - company can view applications for their jobs, freelancer can view their own
-    console.log('--- Application Details Authorization Check ---');
-    console.log('User ID:', req.user.id);
-    console.log('User Role:', req.user.role);
-    console.log('Application ID:', application._id);
-    console.log('Application Freelancer ID:', application.freelancer ? application.freelancer.toString() : 'N/A');
-    console.log('Application Job ID:', application.job ? application.job.toString() : 'N/A');
-
     if (req.user.role === 'company') {
-      const job = await Job.findById(application.job);
-      console.log('Job found for company check:', job ? job._id.toString() : 'N/A');
-      console.log('Job Company ID:', job ? job.company.toString() : 'N/A');
-      if (!job || job.company.toString() !== req.user.id) {
-        console.log('Company authorization failed: Job not found or job.company !== req.user.id');
+      if (!application.job || application.job.company._id.toString() !== req.user.id) {
         return res.status(403).json({ message: 'Not authorized to view this application' });
       }
     } else if (req.user.role === 'freelancer') {
-      if (application.freelancer.toString() !== req.user.id) {
-        console.log('Freelancer authorization failed: application.freelancer !== req.user.id');
+      if (application.freelancer._id.toString() !== req.user.id) {
         return res.status(403).json({ message: 'Not authorized to view this application' });
       }
     }
-    console.log('--- Authorization Check Passed ---');
     
     res.json(application);
   } catch (error) {

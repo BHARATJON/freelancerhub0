@@ -38,7 +38,7 @@ exports.listJobs = async (req, res) => {
       query = { $or: [{ status: 'active' }, { status: { $exists: false } }] };
     }
 
-    const jobs = await Job.find(query).populate('company', 'name');
+    const jobs = await Job.find(query).populate('company', 'name _id');
     res.status(200).json(jobs);
   } catch (error) {
     console.error('List jobs error:', error);
@@ -51,7 +51,7 @@ exports.getJobDetails = async (req, res) => {
     return res.status(400).json({ message: 'Invalid job ID' });
   }
   try {
-    const job = await Job.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true }).populate('company', 'name email').populate('hiredFreelancer', 'name email');
+    const job = await Job.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true }).populate('company', 'name email _id').populate('hiredFreelancer', 'name email');
     if (!job) return res.status(404).json({ message: 'Job not found' });
     res.status(200).json(job);
   } catch (error) {
@@ -86,7 +86,7 @@ exports.getFreelancerJobs = async (req, res) => {
       query.status = status;
     }
 
-    const jobs = await Job.find(query).populate('company', 'name');
+    const jobs = await Job.find(query).populate('company', 'name _id');
     res.status(200).json(jobs);
   } catch (error) {
     console.error('Get freelancer jobs error:', error);
