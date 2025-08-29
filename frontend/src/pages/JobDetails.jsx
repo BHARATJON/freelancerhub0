@@ -120,7 +120,7 @@ const JobDetails = () => {
             </span>
             <span className="flex items-center">
               <DollarSign className="w-4 h-4 mr-1" />
-              {`${job.budget}`} ({job.budgetType})
+              ₹{`${job.budget}`} ({job.budgetType})
             </span>
           </div>
 
@@ -238,7 +238,7 @@ const JobDetails = () => {
                   <textarea value={applicationData.coverLetter} onChange={(e) => setApplicationData(prev => ({ ...prev, coverLetter: e.target.value }))} rows={4} className="input-field" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Proposed Rate ($/hr)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Proposed Rate (₹/hr)</label>
                   <input type="number" value={applicationData.proposedRate} onChange={(e) => setApplicationData(prev => ({ ...prev, proposedRate: e.target.value }))} className="input-field" required />
                 </div>
                 <div>

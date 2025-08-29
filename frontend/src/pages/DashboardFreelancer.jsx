@@ -126,7 +126,7 @@ const DashboardFreelancer = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Hourly Rate</p>
-                <p className="text-2xl font-bold text-gray-900">${profile?.hourlyRate || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">₹{profile?.hourlyRate || 0}</p>
               </div>
             </div>
           </div>
@@ -148,7 +148,7 @@ const DashboardFreelancer = () => {
                   <div key={job._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-gray-900">{job.title}</h3>
-                      <span className="text-sm text-gray-500">${job.budget}</span>
+                      <span className="text-sm text-gray-500">₹{job.budget}</span>
                     </div>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">{job.description}</p>
                     <div className="flex items-center justify-between">
@@ -204,7 +204,7 @@ const DashboardFreelancer = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Total Earnings</span>
-                  <span className="font-medium">${profile?.totalEarnings || 0}</span>
+                  <span className="font-medium">₹{profile?.totalEarnings || 0}</span>
                 </div>
               </div>
               <Link

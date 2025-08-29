@@ -76,7 +76,7 @@ const JobCard = ({ job, onComplete }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center text-gray-600">
             <DollarSign className="w-4 h-4 mr-2" />
-            <span>${job.budget}</span>
+            <span>₹{job.budget}</span>
           </div>
           <div className="flex items-center text-gray-600">
             <Clock className="w-4 h-4 mr-2" />

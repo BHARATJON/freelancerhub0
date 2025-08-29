@@ -199,7 +199,7 @@ const JobApplications = () => {
                         <DollarSign className="w-4 h-4 text-gray-400 mr-2" />
                         <div>
                           <p className="text-xs text-gray-500">Proposed Rate</p>
-                          <p className="font-medium">${application.proposedRate}/hr</p>
+                          <p className="font-medium">₹{application.proposedRate}/hr</p>
                         </div>
                       </div>
                       <div className="flex items-center">
@@ -243,7 +243,7 @@ const JobApplications = () => {
                           <div>
                             <p className="text-xs text-gray-500 mb-1">Hourly Rate</p>
                             <p className="text-sm font-medium">
-                              ${application.freelancerProfile.hourlyRate}/hr
+                              ₹{application.freelancerProfile.hourlyRate}/hr
                             </p>
                           </div>
                         </div>

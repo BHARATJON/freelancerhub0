@@ -222,7 +222,7 @@ const ApplicationDetails = () => {
                     <DollarSign className="w-5 h-5 text-gray-400 mr-3" />
                     <div>
                       <p className="text-sm text-gray-600">Proposed Rate</p>
-                      <p className="font-medium">${application.proposedRate}/hr</p>
+                      <p className="font-medium">₹{application.proposedRate}/hr</p>
                     </div>
                   </div>
                   <div className="flex items-center">
@@ -340,7 +340,7 @@ const ApplicationDetails = () => {
                       <DollarSign className="w-5 h-5 text-gray-400 mr-3" />
                       <div>
                         <p className="text-sm text-gray-600">Hourly Rate</p>
-                        <p className="font-medium">${application.freelancerProfile.hourlyRate}/hr</p>
+                        <p className="font-medium">₹{application.freelancerProfile.hourlyRate}/hr</p>
                       </div>
                     </div>
                     
@@ -389,7 +389,7 @@ const ApplicationDetails = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Budget</p>
-                  <p className="font-medium">${application.job?.budget}</p>
+                  <p className="font-medium">₹{application.job?.budget}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Duration</p>
