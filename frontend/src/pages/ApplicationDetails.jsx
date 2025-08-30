@@ -218,20 +218,7 @@ const ApplicationDetails = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Application Details</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-center">
-                    <DollarSign className="w-5 h-5 text-gray-400 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">Proposed Rate</p>
-                      <p className="font-medium">₹{application.proposedRate}/hr</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="w-5 h-5 text-gray-400 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">Timeline</p>
-                      <p className="font-medium">{application.timeline}</p>
-                    </div>
-                  </div>
+        {/* Removed Proposed Rate and Timeline */}
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center">
@@ -259,65 +246,10 @@ const ApplicationDetails = () => {
             </div>
 
             {/* Portfolio */}
-            {application.portfolio && application.portfolio.length > 0 && (
-              <div className="card">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Portfolio</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {application.portfolio.map((item, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4">
-                      {item.image && (
-                        <img 
-                          src={item.image} 
-                          alt={item.title}
-                          className="w-full h-32 object-cover rounded-lg mb-3"
-                        />
-                      )}
-                      <h3 className="font-medium text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{item.description}</p>
-                      {item.link && (
-                        <a
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm"
-                        >
-                          <ExternalLink className="w-4 h-4 mr-1" />
-                          View Project
-                        </a>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* Removed Portfolio section */}
 
             {/* Attachments */}
-            {application.attachments && application.attachments.length > 0 && (
-              <div className="card">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Attachments</h2>
-                <div className="space-y-3">
-                  {application.attachments.map((attachment, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                      <div className="flex items-center">
-                        <FileText className="w-5 h-5 text-gray-400 mr-3" />
-                        <div>
-                          <p className="font-medium text-gray-900">{attachment.name}</p>
-                          <p className="text-sm text-gray-500">{attachment.type}</p>
-                        </div>
-                      </div>
-                      <a
-                        href={attachment.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-outline text-sm"
-                      >
-                        Download
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* Removed Attachments section */}
           </div>
 
           {/* Sidebar */}

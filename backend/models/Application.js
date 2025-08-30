@@ -21,35 +21,11 @@ const applicationSchema = new mongoose.Schema({
     required: true,
     maxlength: 2000
   },
-  proposedRate: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  timeline: {
-    type: String,
-    required: true
-  },
   status: {
     type: String,
     enum: ['pending', 'reviewed', 'shortlisted', 'interviewed', 'hired', 'rejected'],
     default: 'pending'
   },
-  attachments: [{
-    name: String,
-    url: String,
-    type: String
-  }],
-  portfolio: [{
-    title: String,
-    description: String,
-    link: String,
-    image: String
-  }],
-  questions: [{
-    question: String,
-    answer: String
-  }],
   companyNotes: {
     type: String,
     maxlength: 1000

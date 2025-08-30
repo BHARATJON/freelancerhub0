@@ -9,7 +9,7 @@ const Notification = require('../models/Notification');
 // Apply for job
 router.post('/apply/:jobId', auth, roleCheck(['freelancer']), async (req, res) => {
   try {
-    const { coverLetter, proposedRate, timeline } = req.body;
+  const { coverLetter } = req.body;
     const jobId = req.params.jobId;
 
     // Find the job to get the company
@@ -32,9 +32,7 @@ router.post('/apply/:jobId', auth, roleCheck(['freelancer']), async (req, res) =
       job: jobId,
       freelancer: req.user.id,
       company: job.company, // Fix: set company field
-      coverLetter,
-      proposedRate,
-      timeline
+      coverLetter
     });
 
     await application.save();

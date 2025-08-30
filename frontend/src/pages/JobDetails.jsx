@@ -24,9 +24,7 @@ const JobDetails = () => {
   const [isApplying, setIsApplying] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [applicationData, setApplicationData] = useState({
-    coverLetter: '',
-    proposedRate: '',
-    timeline: ''
+    coverLetter: ''
   });
   const [applications, setApplications] = useState([]);
   const [applicants, setApplicants] = useState([]);
@@ -237,14 +235,7 @@ const JobDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Cover Letter</label>
                   <textarea value={applicationData.coverLetter} onChange={(e) => setApplicationData(prev => ({ ...prev, coverLetter: e.target.value }))} rows={4} className="input-field" required />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Proposed Rate (₹/hr)</label>
-                  <input type="number" value={applicationData.proposedRate} onChange={(e) => setApplicationData(prev => ({ ...prev, proposedRate: e.target.value }))} className="input-field" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Timeline</label>
-                  <input type="text" value={applicationData.timeline} onChange={(e) => setApplicationData(prev => ({ ...prev, timeline: e.target.value }))} className="input-field" required />
-                </div>
+                {/* Removed Proposed Rate and Timeline fields */}
                 <div className="flex space-x-3 pt-4">
                   <button type="button" onClick={() => setShowApplyModal(false)} className="btn-secondary flex-1">Cancel</button>
                   <button type="submit" disabled={isApplying} className="btn-primary flex-1">{isApplying ? 'Submitting...' : 'Submit Application'}</button>

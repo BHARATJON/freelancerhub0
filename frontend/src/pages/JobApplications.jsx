@@ -195,20 +195,7 @@ const JobApplications = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div className="flex items-center">
-                        <DollarSign className="w-4 h-4 text-gray-400 mr-2" />
-                        <div>
-                          <p className="text-xs text-gray-500">Proposed Rate</p>
-                          <p className="font-medium">₹{application.proposedRate}/hr</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        <div>
-                          <p className="text-xs text-gray-500">Timeline</p>
-                          <p className="font-medium">{application.timeline}</p>
-                        </div>
-                      </div>
+                      {/* Removed Proposed Rate and Timeline */}
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                         <div>
