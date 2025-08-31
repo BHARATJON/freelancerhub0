@@ -152,14 +152,7 @@ reviewSchema.pre('save', async function(next) {
             }
           );
         } else if (user.role === 'company') {
-          const CompanyProfile = mongoose.model('CompanyProfile');
-          await CompanyProfile.findOneAndUpdate(
-            { user: this.targetUser },
-            { 
-              rating: averageRating,
-              totalReviews: reviews.length
-            }
-          );
+          // CompanyProfile no longer stores rating or totalReviews
         }
       }
     } catch (error) {

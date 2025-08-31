@@ -34,21 +34,16 @@ exports.getFreelancerProfile = async (req, res) => {
 
 exports.createOrUpdateCompanyProfile = async (req, res) => {
   try {
-    const { companyName, industry, size, description, website, location, verificationDocs, founded, socialLinks, contactInfo } = req.body;
-    let profile = await CompanyProfile.findOne({ user: req.user.id });
+    const { name, industry, size, founded, description } = req.body;
+    let profile = await CompanyProfile.findOne({ _id: req.body.id });
     if (profile) {
-      profile.companyName = companyName;
+      profile.name = name;
       profile.industry = industry;
       profile.size = size;
-      profile.description = description;
-      profile.website = website;
-      profile.location = location;
-      profile.verificationDocs = verificationDocs;
       profile.founded = founded;
-      profile.socialLinks = socialLinks;
-      profile.contactInfo = contactInfo;
+      profile.description = description;
     } else {
-      profile = new CompanyProfile({ user: req.user.id, companyName, industry, size, description, website, location, verificationDocs, founded, socialLinks, contactInfo });
+      profile = new CompanyProfile({ name, industry, size, founded, description });
     }
     await profile.save();
     res.status(200).json(profile);

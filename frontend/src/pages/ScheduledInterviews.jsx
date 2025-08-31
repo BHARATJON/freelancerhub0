@@ -251,7 +251,7 @@ const ScheduledInterviews = () => {
                             <span>
                               {user.role === 'company' 
                                 ? interview.freelancer?.name || 'Freelancer'
-                                : interview.company?.companyName || 'Company'
+                                : interview.company?.name || 'Company'
                               }
                             </span>
                           </div>

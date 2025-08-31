@@ -8,22 +8,11 @@ const ProfileSetupCompany = () => {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    companyName: '',
+    name: '',
     industry: '',
     description: '',
-    website: '',
-    location: '',
     size: '1-10',
-    founded: '',
-    socialLinks: {
-      linkedin: '',
-      twitter: '',
-      facebook: ''
-    },
-    contactInfo: {
-      phone: '',
-      address: ''
-    }
+    founded: ''
   })
 
   const handleChange = (e) => {
@@ -31,16 +20,6 @@ const ProfileSetupCompany = () => {
     setFormData(prev => ({
       ...prev,
       [name]: value
-    }))
-  }
-
-  const handleNestedChange = (parentKey, childKey, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [parentKey]: {
-        ...prev[parentKey],
-        [childKey]: value
-      }
     }))
   }
 
@@ -53,7 +32,6 @@ const ProfileSetupCompany = () => {
         ...formData,
         founded: formData.founded ? parseInt(formData.founded) : undefined
       }
-
       await api.post('/profile/company', profileData)
       toast.success('Company profile created successfully!')
       navigate('/company/dashboard')
@@ -84,7 +62,6 @@ const ProfileSetupCompany = () => {
                 <Building className="w-5 h-5 mr-2" />
                 Company Information
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -92,15 +69,14 @@ const ProfileSetupCompany = () => {
                   </label>
                   <input
                     type="text"
-                    name="companyName"
-                    value={formData.companyName}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     className="input-field"
                     placeholder="Your Company Name"
                     required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Industry *
@@ -125,7 +101,6 @@ const ProfileSetupCompany = () => {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Company Size *
@@ -144,7 +119,6 @@ const ProfileSetupCompany = () => {
                     <option value="500+">500+ employees</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Founded Year
@@ -160,47 +134,7 @@ const ProfileSetupCompany = () => {
                     max="2030"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      className="input-field pl-10"
-                      placeholder="City, Country"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Website
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Globe className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="url"
-                      name="website"
-                      value={formData.website}
-                      onChange={handleChange}
-                      className="input-field pl-10"
-                      placeholder="https://yourcompany.com"
-                    />
-                  </div>
-                </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Company Description *
@@ -221,84 +155,7 @@ const ProfileSetupCompany = () => {
               </div>
             </div>
 
-            {/* Contact Information */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900">Contact Information</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.contactInfo.phone}
-                    onChange={(e) => handleNestedChange('contactInfo', 'phone', e.target.value)}
-                    className="input-field"
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address
-                  </label>
-                  <textarea
-                    value={formData.contactInfo.address}
-                    onChange={(e) => handleNestedChange('contactInfo', 'address', e.target.value)}
-                    rows={3}
-                    className="input-field"
-                    placeholder="Company address..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900">Social Media Links</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    LinkedIn
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.socialLinks.linkedin}
-                    onChange={(e) => handleNestedChange('socialLinks', 'linkedin', e.target.value)}
-                    className="input-field"
-                    placeholder="https://linkedin.com/company/..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Twitter
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.socialLinks.twitter}
-                    onChange={(e) => handleNestedChange('socialLinks', 'twitter', e.target.value)}
-                    className="input-field"
-                    placeholder="https://twitter.com/..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Facebook
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.socialLinks.facebook}
-                    onChange={(e) => handleNestedChange('socialLinks', 'facebook', e.target.value)}
-                    className="input-field"
-                    placeholder="https://facebook.com/..."
-                  />
-                </div>
-              </div>
-            </div>
 
             {/* Submit Button */}
             <div className="flex justify-end pt-6 border-t border-gray-200">
