@@ -17,7 +17,7 @@ router.get('/my-jobs', auth, roleCheck(['freelancer']), jobController.getFreelan
 // Get job details (public)
 router.get('/:id', jobController.getJobDetails);
 // Mark a job as completed (company only)
-router.put('/:id/complete', auth, roleCheck(['company']), jobController.completeJob);
+router.put('/:id/complete', auth, roleCheck(['company', 'freelancer']), jobController.completeJob);
 
 // Get applications for a job (company)
 router.get('/:id/applications', auth, roleCheck(['company']), async (req, res) => {

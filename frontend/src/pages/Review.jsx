@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { Star, Send } from 'lucide-react'
 import api from '../utils/api'
@@ -7,12 +7,45 @@ import api from '../utils/api'
 const Review = () => {
   const { userId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     rating: 5,
     comment: '',
-    type: 'company-to-freelancer'
+    type: ''
   })
+  const [reviewId, setReviewId] = useState(null)
+  // Get ?type=company-to-freelancer or freelancer-to-company from query
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const type = params.get('type') || 'company-to-freelancer'
+    setFormData(f => ({ ...f, type }))
+    // Fetch existing review for this user/type
+    const fetchReview = async () => {
+      try {
+        const res = await api.get(`/reviews/${userId}`)
+        // Find review by current user and type
+        const token = localStorage.getItem('auth-storage')
+        let myId = null
+        if (token) {
+          try {
+            const authData = JSON.parse(token)
+            myId = authData.state?.user?._id
+          } catch {}
+        }
+        const myReview = res.data.find(r => r.reviewer?._id === myId && r.type === type)
+        if (myReview) {
+          setFormData({
+            rating: myReview.rating,
+            comment: myReview.comment,
+            type: myReview.type
+          })
+          setReviewId(myReview._id)
+        }
+      } catch {}
+    }
+    fetchReview()
+  }, [userId, location.search])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -25,14 +58,22 @@ const Review = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-
     try {
-      await api.post('/reviews', {
-        targetUserId: userId,
-        ...formData,
-        rating: parseInt(formData.rating)
-      })
-      toast.success('Review submitted successfully!')
+      if (reviewId) {
+        // Update existing review (assume PATCH endpoint exists, else use POST fallback)
+        await api.patch(`/reviews/${reviewId}`, {
+          ...formData,
+          rating: parseInt(formData.rating)
+        })
+        toast.success('Review updated successfully!')
+      } else {
+        await api.post('/reviews', {
+          targetUserId: userId,
+          ...formData,
+          rating: parseInt(formData.rating)
+        })
+        toast.success('Review submitted successfully!')
+      }
       navigate(-1)
     } catch (error) {
       toast.error('Failed to submit review. Please try again.')
@@ -111,7 +152,7 @@ const Review = () => {
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Submit Review
+                    {reviewId ? 'Update Review' : 'Submit Review'}
                   </>
                 )}
               </button>

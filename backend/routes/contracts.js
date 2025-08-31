@@ -7,64 +7,111 @@ const Application = require('../models/Application');
 const Job = require('../models/Job');
 const Notification = require('../models/Notification');
 
+// Get contract by jobId for current user
+router.get('/job/:jobId', auth, async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    let query = { job: jobId };
+    // Only allow company or freelancer involved to fetch
+    if (req.user.role === 'company') {
+      query.company = req.user.id;
+    } else if (req.user.role === 'freelancer') {
+      query.freelancer = req.user.id;
+    } else {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    const contract = await Contract.findOne(query)
+      .populate('job')
+      .populate('company', 'name companyName')
+      .populate('freelancer', 'name email')
+      .populate('application');
+    if (!contract) {
+      return res.status(404).json({ message: 'Contract not found' });
+    }
+    res.json(contract);
+  } catch (error) {
+    console.error('Get contract by job error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
 // Generate contract for hired candidate
 router.post('/', auth, roleCheck(['company']), async (req, res) => {
   try {
-  const { applicationId, startDate, endDate, totalHours, terms } = req.body;
-
+    console.log('POST /contracts body:', req.body);
+    const { applicationId, startDate, endDate, totalAmount } = req.body;
     const application = await Application.findById(applicationId);
     if (!application) {
+      console.log('Application not found:', applicationId);
       return res.status(404).json({ message: 'Application not found' });
     }
-
     const job = await Job.findById(application.job);
     if (job.company.toString() !== req.user.id) {
+      console.log('Not authorized: job.company', job.company, 'user', req.user.id);
       return res.status(403).json({ message: 'Not authorized' });
     }
-
     const contract = new Contract({
       job: application.job,
       company: req.user.id,
       freelancer: application.freelancer,
       application: applicationId,
-      title: `Contract for ${job.title}`,
-      description: job.description,
-      terms,
       startDate,
       endDate,
-      totalHours,
-  // totalAmount should be set to the fixed price set by the company
-      status: 'draft'
+      totalAmount
     });
-
     await contract.save();
-
     // Update application status to hired
     application.status = 'hired';
     application.hiredAt = new Date();
     await application.save();
-
-    // Create notification
-    const notification = new Notification({
-      recipient: application.freelancer,
-      sender: req.user.id,
-      type: 'application_hired',
-      title: 'Contract Generated',
-      message: `A contract has been generated for "${job.title}". Please review and sign.`,
-      relatedApplication: application._id,
-      relatedJob: application.job
-    });
-
-    await notification.save();
-
+    // Notify freelancer (pseudo, implement Notification model if needed)
+    // await Notification.create({ recipient: application.freelancer, type: 'contract_created', message: 'A contract has been created for your job.' });
     res.status(201).json({
       message: 'Contract generated successfully',
-      contract,
-      notification
+      contract
     });
   } catch (error) {
     console.error('Generate contract error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message, stack: error.stack });
+  }
+});
+
+// Freelancer finalizes contract
+router.put('/:id/finalize', auth, roleCheck(['freelancer']), async (req, res) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) return res.status(404).json({ message: 'Contract not found' });
+    if (contract.freelancer.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
+    contract.isFinalized = true;
+    await contract.save();
+    // Notify company (pseudo, implement Notification model if needed)
+    // await Notification.create({ recipient: contract.company, type: 'contract_finalized', message: 'Freelancer has finalized the contract.' });
+    res.json({ message: 'Contract finalized', contract });
+  } catch (error) {
+    console.error('Finalize contract error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Edit contract (company can edit if not finalized)
+router.put('/:id', auth, roleCheck(['company']), async (req, res) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) return res.status(404).json({ message: 'Contract not found' });
+    if (contract.company.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
+    if (contract.isFinalized) return res.status(400).json({ message: 'Cannot edit a finalized contract' });
+    const { startDate, endDate, totalAmount } = req.body;
+    contract.startDate = startDate;
+    contract.endDate = endDate;
+    contract.totalAmount = totalAmount;
+    await contract.save();
+    res.json({ message: 'Contract updated', contract });
+  } catch (error) {
+    console.error('Edit contract error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -80,7 +127,7 @@ router.get('/', auth, async (req, res) => {
     }
 
     const contracts = await Contract.find(query)
-      .populate('job', 'title')
+      .populate('job')
       .populate('company', 'name companyName')
       .populate('freelancer', 'name email')
       .sort({ createdAt: -1 });
@@ -117,50 +164,6 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Sign contract
-router.put('/:id/sign', auth, async (req, res) => {
-  try {
-    const { signatureData } = req.body;
-    const contract = await Contract.findById(req.params.id);
 
-    if (!contract) {
-      return res.status(404).json({ message: 'Contract not found' });
-    }
-
-    if (contract.company.toString() !== req.user.id &&
-        contract.freelancer.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized' });
-    }
-
-    if (req.user.role === 'company') {
-      contract.companySignature = {
-        signed: true,
-        signedAt: new Date(),
-        signatureData
-      };
-    } else {
-      contract.freelancerSignature = {
-        signed: true,
-        signedAt: new Date(),
-        signatureData
-      };
-    }
-
-    // Check if both parties have signed
-    if (contract.companySignature.signed && contract.freelancerSignature.signed) {
-      contract.status = 'active';
-    }
-
-    await contract.save();
-
-    res.json({
-      message: 'Contract signed successfully',
-      contract
-    });
-  } catch (error) {
-    console.error('Sign contract error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 module.exports = router;
