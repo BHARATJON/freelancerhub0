@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { Briefcase, DollarSign, MapPin, Clock, Plus, X } from 'lucide-react'
+import { Briefcase, IndianRupee, MapPin, Clock, Plus, X } from 'lucide-react'
 import api from '../utils/api'
 
 const JobPost = () => {
@@ -13,7 +13,7 @@ const JobPost = () => {
     requirements: [''],
     skills: [''],
     budget: '',
-    budgetType: 'fixed',
+  budgetType: 'fixed', // Always fixed price
     duration: '',
     type: 'project',
     location: '',
@@ -65,7 +65,8 @@ const JobPost = () => {
         ...formData,
         requirements: filteredRequirements,
         skills: filteredSkills,
-        budget: parseInt(formData.budget)
+            budget: parseInt(formData.budget),
+            budgetType: 'fixed' // Set budget type to fixed
       }
 
       await api.post('/jobs', jobData)
@@ -139,7 +140,7 @@ const JobPost = () => {
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-gray-400" />
+                      <IndianRupee className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       type="number"
@@ -158,16 +159,8 @@ const JobPost = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Budget Type *
                   </label>
-                  <select
-                    name="budgetType"
-                    value={formData.budgetType}
-                    onChange={handleChange}
-                    className="input-field"
-                    required
-                  >
-                    <option value="fixed">Fixed Price</option>
-                    <option value="hourly">Hourly Rate</option>
-                  </select>
+                      {/* Budget Type is now always Fixed Price, so no selection needed */}
+                      <input type="hidden" name="budgetType" value="fixed" />
                 </div>
 
                 <div>

@@ -16,11 +16,6 @@ const freelancerProfileSchema = new mongoose.Schema({
     enum: ['beginner', 'intermediate', 'expert'],
     required: true
   },
-  hourlyRate: {
-    type: Number,
-    required: true,
-    min: 1
-  },
   portfolio: [{
     title: String,
     description: String,
@@ -33,11 +28,6 @@ const freelancerProfileSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true
-  },
-  availability: {
-    type: String,
-    enum: ['full-time', 'part-time', 'contract'],
     required: true
   },
   education: [{
@@ -81,6 +71,6 @@ const freelancerProfileSchema = new mongoose.Schema({
 });
 
 // Index for search functionality
-freelancerProfileSchema.index({ skills: 1, location: 1, hourlyRate: 1 });
+freelancerProfileSchema.index({ skills: 1, location: 1 });
 
 module.exports = mongoose.model('FreelancerProfile', freelancerProfileSchema); 

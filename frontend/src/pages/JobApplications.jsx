@@ -5,7 +5,7 @@ import {
   ArrowLeft,
   User,
   Calendar,
-  DollarSign,
+  IndianRupee,
   Eye,
   Filter,
   Search,
@@ -230,7 +230,7 @@ const JobApplications = () => {
                           <div>
                             <p className="text-xs text-gray-500 mb-1">Hourly Rate</p>
                             <p className="text-sm font-medium">
-                              ₹{application.freelancerProfile.hourlyRate}/hr
+
                             </p>
                           </div>
                         </div>

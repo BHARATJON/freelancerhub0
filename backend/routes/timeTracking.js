@@ -39,7 +39,6 @@ router.post('/start', auth, roleCheck(['freelancer']), async (req, res) => {
       startTime: new Date(),
       task,
       description,
-      hourlyRate: contract.hourlyRate,
       status: 'active'
     });
 

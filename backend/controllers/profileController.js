@@ -3,18 +3,16 @@ const CompanyProfile = require('../models/CompanyProfile');
 
 exports.createOrUpdateFreelancerProfile = async (req, res) => {
   try {
-    const { skills, experience, hourlyRate, portfolio, bio, location, availability } = req.body;
+  const { skills, experience, portfolio, bio, location } = req.body;
     let profile = await FreelancerProfile.findOne({ user: req.user.id });
     if (profile) {
       profile.skills = skills;
       profile.experience = experience;
-      profile.hourlyRate = hourlyRate;
       profile.portfolio = portfolio;
       profile.bio = bio;
       profile.location = location;
-      profile.availability = availability;
     } else {
-      profile = new FreelancerProfile({ user: req.user.id, skills, experience, hourlyRate, portfolio, bio, location, availability });
+  profile = new FreelancerProfile({ user: req.user.id, skills, experience, portfolio, bio, location });
     }
     await profile.save();
     res.status(200).json(profile);

@@ -100,10 +100,8 @@ Content-Type: application/json
 {
   "skills": ["React", "Node.js", "MongoDB"],
   "experience": "intermediate",
-  "hourlyRate": 25,
   "bio": "Experienced full-stack developer",
   "location": "New York, USA",
-  "availability": "full-time"
 }
 ```
 

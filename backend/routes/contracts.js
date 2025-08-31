@@ -10,7 +10,7 @@ const Notification = require('../models/Notification');
 // Generate contract for hired candidate
 router.post('/', auth, roleCheck(['company']), async (req, res) => {
   try {
-    const { applicationId, startDate, endDate, hourlyRate, totalHours, terms } = req.body;
+  const { applicationId, startDate, endDate, totalHours, terms } = req.body;
 
     const application = await Application.findById(applicationId);
     if (!application) {
@@ -32,9 +32,8 @@ router.post('/', auth, roleCheck(['company']), async (req, res) => {
       terms,
       startDate,
       endDate,
-      hourlyRate,
       totalHours,
-      totalAmount: hourlyRate * totalHours,
+  // totalAmount should be set to the fixed price set by the company
       status: 'draft'
     });
 

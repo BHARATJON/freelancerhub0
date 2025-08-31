@@ -27,11 +27,13 @@ const jobSchema = new mongoose.Schema({
   budget: {
     type: Number,
     required: true,
-    min: 1
+    min: 1,
+    description: 'Fixed price set by the company'
   },
   budgetType: {
     type: String,
-    enum: ['fixed', 'hourly'],
+    enum: ['fixed'],
+    default: 'fixed',
     required: true
   },
   duration: {

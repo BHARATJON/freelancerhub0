@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { 
   MapPin, 
   Clock, 
-  DollarSign, 
+  IndianRupee, 
   Calendar, 
   Briefcase, 
   Send,
@@ -117,7 +117,7 @@ const JobDetails = () => {
               {job.type}
             </span>
             <span className="flex items-center">
-              <DollarSign className="w-4 h-4 mr-1" />
+              <IndianRupee className="w-4 h-4 mr-1" />
               ₹{`${job.budget}`} ({job.budgetType})
             </span>
           </div>

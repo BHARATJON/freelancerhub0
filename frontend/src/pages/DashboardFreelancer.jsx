@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 import { 
   Briefcase, 
   Clock, 
-  DollarSign, 
+  IndianRupee, 
   Star, 
   Eye, 
   Send,
@@ -50,7 +50,7 @@ const DashboardFreelancer = () => {
     try {
       await api.post(`/applications/apply/${jobId}`, {
         coverLetter: 'I am interested in this position and would like to apply.',
-        proposedRate: profile?.hourlyRate || 25,
+  proposedRate: profile?.totalEarnings || 0,
         timeline: '2-4 weeks'
       })
       toast.success('Application submitted successfully!')
@@ -122,11 +122,11 @@ const DashboardFreelancer = () => {
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-purple-600" />
+                <IndianRupee className="w-6 h-6 text-purple-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Hourly Rate</p>
-                <p className="text-2xl font-bold text-gray-900">₹{profile?.hourlyRate || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">₹{profile?.totalEarnings || 0}</p>
               </div>
             </div>
           </div>

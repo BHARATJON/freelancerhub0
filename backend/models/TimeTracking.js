@@ -49,11 +49,6 @@ const timeTrackingSchema = new mongoose.Schema({
     enum: ['active', 'paused', 'completed', 'approved', 'rejected'],
     default: 'active'
   },
-  hourlyRate: {
-    type: Number,
-    required: true,
-    min: 1
-  },
   amount: {
     type: Number,
     default: 0
@@ -86,7 +81,7 @@ const timeTrackingSchema = new mongoose.Schema({
 timeTrackingSchema.pre('save', function(next) {
   if (this.endTime && this.startTime) {
     this.duration = Math.round((this.endTime - this.startTime) / (1000 * 60)); // Convert to minutes
-    this.amount = (this.duration / 60) * this.hourlyRate; // Calculate amount
+  // amount should reflect fixed price payments if needed
   }
   next();
 });

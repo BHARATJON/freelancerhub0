@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 import { 
   ArrowLeft,
   Calendar,
-  DollarSign,
+  IndianRupee,
   Clock,
   User,
   Mail,
@@ -269,10 +269,10 @@ const ApplicationDetails = () => {
                 {application.freelancerProfile && (
                   <>
                     <div className="flex items-center">
-                      <DollarSign className="w-5 h-5 text-gray-400 mr-3" />
+                      <IndianRupee className="w-5 h-5 text-gray-400 mr-3" />
                       <div>
                         <p className="text-sm text-gray-600">Hourly Rate</p>
-                        <p className="font-medium">₹{application.freelancerProfile.hourlyRate}/hr</p>
+
                       </div>
                     </div>
                     

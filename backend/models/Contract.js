@@ -46,25 +46,15 @@ const contractSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  hourlyRate: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  totalHours: {
-    type: Number,
-    required: true,
-    min: 1
-  },
   totalAmount: {
     type: Number,
     required: true,
-    min: 1
+    description: 'Fixed price for the project set by the company'
   },
   paymentTerms: {
     type: String,
-    enum: ['hourly', 'fixed', 'milestone'],
-    default: 'hourly'
+    enum: ['fixed'],
+    default: 'fixed'
   },
   status: {
     type: String,

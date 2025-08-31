@@ -1,31 +1,30 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { User, MapPin, DollarSign, Calendar, Briefcase, Plus, X } from 'lucide-react'
+import { User, MapPin, IndianRupee, Calendar, Briefcase, Plus, X } from 'lucide-react'
 import api from '../utils/api'
 
 const ProfileSetupFreelancer = () => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     skills: [''],
     experience: 'beginner',
-    hourlyRate: '',
-    bio: '',
-    location: '',
-    availability: 'full-time',
+  bio: '',
+  location: '',
     education: [{ degree: '', institution: '', year: '' }],
     certifications: [{ name: '', issuer: '', year: '', link: '' }],
     languages: [{ language: '', proficiency: 'conversational' }]
   })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+  // (Removed duplicate addSkill)
 
   const handleArrayChange = (index, field, value, arrayName) => {
     setFormData(prev => ({
@@ -60,40 +59,28 @@ const ProfileSetupFreelancer = () => {
     setFormData(prev => ({
       ...prev,
       skills: [...prev.skills, '']
-    }))
-  }
-
-  const removeSkill = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.filter((_, i) => i !== index)
-    }))
+    }));
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+    e.preventDefault();
+    setIsLoading(true);
     try {
       // Filter out empty skills
-      const filteredSkills = formData.skills.filter(skill => skill.trim() !== '')
-      
+      const filteredSkills = formData.skills.filter(skill => skill.trim() !== '');
       const profileData = {
         ...formData,
-        skills: filteredSkills,
-        hourlyRate: parseInt(formData.hourlyRate)
-      }
-
-      await api.post('/profile/freelancer', profileData)
-      toast.success('Profile created successfully!')
-      navigate('/freelancer/dashboard')
+        skills: filteredSkills
+      };
+      await api.post('/profile/freelancer', profileData);
+      toast.success('Profile created successfully!');
+      navigate('/freelancer/dashboard');
     } catch (error) {
-      toast.error('Failed to create profile. Please try again.')
+      toast.error('Failed to create profile. Please try again.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -131,28 +118,6 @@ const ProfileSetupFreelancer = () => {
                     <option value="expert">Expert (5+ years)</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Hourly Rate (₹)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="number"
-                      name="hourlyRate"
-                      value={formData.hourlyRate}
-                      onChange={handleChange}
-                      className="input-field pl-10"
-                      placeholder="25"
-                      min="1"
-                      required
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location
@@ -172,29 +137,8 @@ const ProfileSetupFreelancer = () => {
                     />
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Availability
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Calendar className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <select
-                      name="availability"
-                      value={formData.availability}
-                      onChange={handleChange}
-                      className="input-field pl-10"
-                    >
-                      <option value="full-time">Full Time</option>
-                      <option value="part-time">Part Time</option>
-                      <option value="contract">Contract</option>
-                    </select>
-                  </div>
-                </div>
               </div>
-
+              {/* Availability removed. Add bio field below. */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Bio
@@ -212,7 +156,6 @@ const ProfileSetupFreelancer = () => {
                   {formData.bio.length}/1000 characters
                 </p>
               </div>
-            </div>
 
             {/* Skills */}
             <div className="space-y-6">
@@ -319,11 +262,12 @@ const ProfileSetupFreelancer = () => {
                 )}
               </button>
             </div>
+          </div> {/* Close the last opened div for form sections */}
           </form>
         </div>
       </div>
     </div>
   )
-}
+  }
 
-export default ProfileSetupFreelancer 
+export default ProfileSetupFreelancer;
