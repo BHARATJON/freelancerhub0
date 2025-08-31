@@ -43,7 +43,8 @@ const jobSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['full-time', 'part-time', 'contract', 'project', 'hourly'],
+    enum: ['project'],
+    default: 'project',
     required: true
   },
   status: {
@@ -53,11 +54,12 @@ const jobSchema = new mongoose.Schema({
   },
   location: {
     type: String,
+    default: 'Remote',
     required: true
   },
   remote: {
     type: Boolean,
-    default: false
+    default: true
   },
   experienceLevel: {
     type: String,

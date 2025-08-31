@@ -84,11 +84,11 @@ const JobCard = ({ job, onComplete }) => {
           </div>
           <div className="flex items-center text-gray-600">
             <MapPin className="w-4 h-4 mr-2" />
-            <span>{job.location}</span>
+            <span>Remote</span>
           </div>
           <div className="flex items-center text-gray-600">
             <Briefcase className="w-4 h-4 mr-2" />
-            <span>{job.type}</span>
+            <span>Project</span>
           </div>
         </div>
 

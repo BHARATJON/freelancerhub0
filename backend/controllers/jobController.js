@@ -4,9 +4,9 @@ const mongoose = require('mongoose');
 exports.createJob = async (req, res) => {
   try {
     const {
-      title, description, requirements, skills, budget, budgetType, duration, type, location, remote, experienceLevel
+      title, description, requirements, skills, budget, duration, experienceLevel
     } = req.body;
-    if (!title || !description || !requirements || !skills || !budget || !budgetType || !duration || !type || !location || !experienceLevel) {
+    if (!title || !description || !requirements || !skills || !budget || !duration || !experienceLevel) {
       return res.status(400).json({ message: 'Missing required fields. Please fill out all required job details.' });
     }
     if (!Array.isArray(requirements) || requirements.length === 0) {
@@ -17,7 +17,17 @@ exports.createJob = async (req, res) => {
     }
     const job = new Job({
       company: req.user.id,
-      title, description, requirements, skills, budget, budgetType, duration, type, location, remote, experienceLevel
+      title,
+      description,
+      requirements,
+      skills,
+      budget,
+      budgetType: 'fixed',
+      duration,
+      type: 'project',
+      location: 'Remote',
+      remote: true,
+      experienceLevel
     });
     await job.save();
     res.status(201).json({ message: 'Job posted successfully', job });

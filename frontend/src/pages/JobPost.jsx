@@ -13,11 +13,11 @@ const JobPost = () => {
     requirements: [''],
     skills: [''],
     budget: '',
-  budgetType: 'fixed', // Always fixed price
+    budgetType: 'fixed', // Always fixed price
     duration: '',
-    type: 'project',
-    location: '',
-    remote: false,
+    type: 'project', // Always project
+    location: 'Remote', // Always Remote
+    remote: true, // Always remote
     experienceLevel: 'intermediate'
   })
 
@@ -116,23 +116,6 @@ const JobPost = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Job Type *
-                  </label>
-                  <select
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    className="input-field"
-                    required
-                  >
-                    <option value="project">Project</option>
-                    <option value="hourly">Hourly</option>
-                    <option value="part-time">Part-time</option>
-                    <option value="full-time">Full-time</option>
-                  </select>
-                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -155,13 +138,6 @@ const JobPost = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Budget Type *
-                  </label>
-                      {/* Budget Type is now always Fixed Price, so no selection needed */}
-                      <input type="hidden" name="budgetType" value="fixed" />
-                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -201,37 +177,9 @@ const JobPost = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      className="input-field pl-10"
-                      placeholder="City, Country"
-                    />
-                  </div>
-                </div>
+                {/* Removed Job Type, Budget Type, and Location fields as per requirements */}
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="remote"
-                    checked={formData.remote}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 block text-sm text-gray-900">
-                    Remote work allowed
-                  </label>
-                </div>
+                {/* Remote is always true, so no checkbox needed */}
               </div>
 
               <div>

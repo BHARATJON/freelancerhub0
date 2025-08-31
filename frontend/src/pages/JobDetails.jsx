@@ -110,15 +110,15 @@ const JobDetails = () => {
             </span>
             <span className="flex items-center mr-4">
               <MapPin className="w-4 h-4 mr-1" />
-              {job.location} {job.remote && '(Remote)'}
+              Remote
             </span>
             <span className="flex items-center mr-4">
               <Clock className="w-4 h-4 mr-1" />
-              {job.type}
+              Project
             </span>
             <span className="flex items-center">
               <IndianRupee className="w-4 h-4 mr-1" />
-              ₹{`${job.budget}`} ({job.budgetType})
+              ₹{`${job.budget}`} (Fixed)
             </span>
           </div>
 
