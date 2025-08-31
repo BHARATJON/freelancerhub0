@@ -65,6 +65,10 @@ const freelancerProfileSchema = new mongoose.Schema({
   totalEarnings: {
     type: Number,
     default: 0
+  },
+  upi_id: {
+    type: String,
+    required: true
   }
 }, {
   timestamps: true

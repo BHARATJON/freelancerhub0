@@ -17,8 +17,9 @@ const ProfileSetupFreelancer = () => {
   const [formData, setFormData] = useState({
     skills: [''],
     experience: 'beginner',
-  bio: '',
-  location: '',
+    bio: '',
+    location: '',
+    upi_id: '',
     education: [{ degree: '', institution: '', year: '' }],
     certifications: [{ name: '', issuer: '', year: '', link: '' }],
     languages: [{ language: '', proficiency: 'conversational' }]
@@ -136,6 +137,20 @@ const ProfileSetupFreelancer = () => {
                       required
                     />
                   </div>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    UPI ID <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="upi_id"
+                    value={formData.upi_id}
+                    onChange={handleChange}
+                    className="input-field"
+                    placeholder="your-upi@bank"
+                    required
+                  />
                 </div>
               </div>
               {/* Availability removed. Add bio field below. */}
