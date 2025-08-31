@@ -12,6 +12,7 @@ const Chat = () => {
   const { user } = useAuthStore();
   const socketRef = useRef(null);
   const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     // Fetch initial messages
@@ -42,6 +43,13 @@ const Chat = () => {
       socketRef.current.disconnect();
     };
   }, [jobId]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -159,31 +167,33 @@ const Chat = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Chat for Job</h1>
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="flex flex-col h-[600px]">
-          <div className="flex-1 overflow-y-auto">
+  <div className="flex h-screen w-full bg-gray-100 overflow-auto">
+  <div className="w-[75vw] h-[80vh] bg-white rounded-lg shadow-lg flex flex-col p-0 overflow-auto mt-8 ml-8">
+        <h1 className="text-3xl font-bold mb-8 text-left pl-8 pt-8">Chat for Job</h1>
+        <div className="flex flex-col flex-1 px-8 pb-8">
+          <div className="flex-1 overflow-y-auto mb-4 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" style={{ minHeight: 0, maxHeight: '100%', height: '100%' }}>
             {messages.map((message) => (
               <div
                 key={message._id}
-                className={`flex ${
+                className={`flex w-full ${
                   message.sender._id === user.id ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
-                  className={`p-3 rounded-lg max-w-xs ${
+                  className={`p-3 rounded-lg break-words max-w-[60%] ${
                     message.sender._id === user.id
                       ? 'bg-primary-500 text-white'
                       : 'bg-gray-200'
                   }`}
+                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                 >
                   {renderMessageContent(message)}
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={handleSendMessage} className="mt-4 flex">
+          <form onSubmit={handleSendMessage} className="flex">
             <input
               type="file"
               ref={fileInputRef}
