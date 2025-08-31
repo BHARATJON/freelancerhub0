@@ -75,6 +75,11 @@ const initSocket = (server) => {
       io.to(targetId).emit('ice-candidate', { candidate, senderId: socket.id });
     });
 
+    socket.on('join-chat', ({ jobId }) => {
+      socket.join(jobId);
+      console.log(`User ${socket.id} joined chat room: ${jobId}`);
+    });
+
     socket.on('disconnect', () => {
       console.log(`User disconnected: ${socket.id}`);
       const interviewId = socket.interviewId;

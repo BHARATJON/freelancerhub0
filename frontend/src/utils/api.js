@@ -3,7 +3,7 @@ import { toast } from 'react-toastify'
 
 // Create axios instance
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:5000/api', // Updated to backend server
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

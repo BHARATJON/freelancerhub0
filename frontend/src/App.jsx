@@ -23,6 +23,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Payment from './pages/Payment';
 import TransactionHistory from './pages/TransactionHistory';
 import Jobs from './pages/Jobs';
+import Chat from './pages/Chat';
 import { useEffect } from 'react' // Import useEffect
 
 function App() {
@@ -134,6 +135,11 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/chat/:jobId" element={
+            <ProtectedRoute allowedRoles={['freelancer', 'company']}>
+              <Chat />
+            </ProtectedRoute>
+          } />
         </Routes>
       </main>
       <Footer />

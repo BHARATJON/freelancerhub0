@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Clock, IndianRupee, Briefcase } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
-const JobCard = ({ job, onComplete }) => {
+const JobCard = ({ job, onComplete, showChatButton }) => {
   const { user } = useAuthStore();
 
   const getStatusColor = (status) => {
@@ -115,12 +115,21 @@ const JobCard = ({ job, onComplete }) => {
 
         {/* Action Buttons */}
         <div className="flex space-x-2 pt-4">
-          <Link
-            to={`/job/${job._id}`}
-            className="btn-outline flex-1 text-center"
-          >
-            View Details
-          </Link>
+          {showChatButton ? (
+            <Link
+              to={`/chat/${job._id}`}
+              className="btn-primary flex-1 text-center"
+            >
+              Chat
+            </Link>
+          ) : (
+            <Link
+              to={`/job/${job._id}`}
+              className="btn-outline flex-1 text-center"
+            >
+              View Details
+            </Link>
+          )}
           {user?.role === 'company' && job.status === 'in-progress' && job.company?._id === user.id && onComplete && (
             <button
               onClick={() => onComplete(job._id)}

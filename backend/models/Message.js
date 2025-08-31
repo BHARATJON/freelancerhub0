@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 
+const attachmentSchema = new mongoose.Schema({
+  name: String,
+  url: String,
+  type: String,
+  size: Number
+});
+
+
 const messageSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
@@ -37,12 +45,7 @@ const messageSchema = new mongoose.Schema({
     enum: ['text', 'file', 'image', 'video', 'audio'],
     default: 'text'
   },
-  attachments: [{
-    name: String,
-    url: String,
-    type: String,
-    size: Number
-  }],
+    attachments: [attachmentSchema],
   isRead: {
     type: Boolean,
     default: false

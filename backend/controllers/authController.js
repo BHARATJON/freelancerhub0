@@ -47,9 +47,9 @@ exports.login = async (req, res) => {
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
+    res.json({ id: user._id, email: user.email, role: user.role, name: user.name });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
-}; 
+};

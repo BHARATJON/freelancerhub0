@@ -82,6 +82,7 @@ const Jobs = () => {
                 key={job._id}
                 job={job}
                 onComplete={handleCompleteJob}
+                showChatButton={activeTab === 'in-progress' || activeTab === 'completed'}
               />
             ))
           ) : (
