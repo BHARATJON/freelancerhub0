@@ -1,39 +1,38 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Briefcase, IndianRupee, MapPin, Clock, Plus, X } from 'lucide-react';
+import { Briefcase, IndianRupee, Clock, Plus, X } from 'lucide-react';
 import api from '../utils/api';
 
-const JobPost = () => {
-  const navigate = useNavigate();
+const EditJobModal = ({ jobId, onClose, onJobUpdated }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    requirements: [''],
-    skills: [''],
-    budget: '',
-    budgetType: 'fixed', // Always fixed price
-    duration: '',
-    // type: 'project', // Removed job type field
-    location: 'Remote', // Always Remote
-    remote: true, // Always remote
-    experienceLevel: 'intermediate',
-    numberOfModels: '',
-    models: [],
-  });
+  const [formData, setFormData] = useState(null);
 
   useEffect(() => {
-    const numModels = parseInt(formData.numberOfModels, 10);
-    if (!isNaN(numModels) && numModels >= 0) {
-      const newModels = Array.from({ length: numModels }, (_, i) => {
-        return formData.models[i] || { modelName: '', modelDescription: '', modelWeightage: '' };
-      });
-      setFormData(prev => ({ ...prev, models: newModels }));
-    } else {
-      setFormData(prev => ({ ...prev, models: [] }));
+    const fetchJobDetails = async () => {
+      try {
+        const response = await api.get(`/jobs/${jobId}`);
+        setFormData(response.data);
+      } catch (error) {
+        toast.error('Failed to load job details');
+        onClose();
+      }
+    };
+    fetchJobDetails();
+  }, [jobId, onClose]);
+
+  useEffect(() => {
+    if (formData) {
+        const numModels = parseInt(formData.numberOfModels, 10);
+        if (!isNaN(numModels) && numModels >= 0) {
+          const newModels = Array.from({ length: numModels }, (_, i) => {
+            return formData.models[i] || { modelName: '', modelDescription: '', modelWeightage: '' };
+          });
+          setFormData(prev => ({ ...prev, models: newModels }));
+        } else {
+          setFormData(prev => ({ ...prev, models: [] }));
+        }
     }
-  }, [formData.numberOfModels]);
+  }, [formData?.numberOfModels]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -77,7 +76,6 @@ const JobPost = () => {
     setIsLoading(true);
 
     try {
-      // Filter out empty requirements and skills
       const filteredRequirements = formData.requirements.filter(req => req.trim() !== '');
       const filteredSkills = formData.skills.filter(skill => skill.trim() !== '');
 
@@ -86,35 +84,33 @@ const JobPost = () => {
         requirements: filteredRequirements,
         skills: filteredSkills,
         budget: parseInt(formData.budget),
-        budgetType: 'fixed', // Set budget type to fixed
-        type: 'project', // Always send allowed value
       };
 
-      await api.post('/jobs', jobData);
-      toast.success('Job posted successfully!');
-      navigate('/company/dashboard');
+      await api.put(`/jobs/${jobId}`, jobData);
+      toast.success('Job updated successfully!');
+      onJobUpdated();
+      onClose();
     } catch (error) {
-      toast.error('Failed to post job. Please try again.');
+      toast.error('Failed to update job. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="card">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Post a New Job
-            </h1>
-            <p className="text-gray-600">
-              Find the perfect freelancer for your project
-            </p>
-          </div>
+  if (!formData) {
+    return <div>Loading...</div>;
+  }
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic Information */}
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full p-6 overflow-y-auto max-h-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Edit Job
+          </h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-gray-900 flex items-center">
                 <Briefcase className="w-5 h-5 mr-2" />
@@ -197,10 +193,6 @@ const JobPost = () => {
                     <option value="expert">Expert</option>
                   </select>
                 </div>
-
-                {/* Removed Job Type, Budget Type, and Location fields as per requirements */}
-
-                {/* Remote is always true, so no checkbox needed */}
               </div>
 
               <div>
@@ -223,7 +215,6 @@ const JobPost = () => {
               </div>
             </div>
 
-            {/* Requirements */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-gray-900">Requirements</h2>
               <div className="space-y-4">
@@ -258,7 +249,6 @@ const JobPost = () => {
               </div>
             </div>
 
-            {/* Skills */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-gray-900">Required Skills</h2>
               <div className="space-y-4">
@@ -293,7 +283,6 @@ const JobPost = () => {
               </div>
             </div>
 
-            {/* Models */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-gray-900">Models</h2>
               <div>
@@ -361,8 +350,14 @@ const JobPost = () => {
               ))}
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end pt-6 border-t border-gray-200">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="btn-secondary px-8 py-3 mr-4"
+                >
+                    Cancel
+                </button>
               <button
                 type="submit"
                 disabled={isLoading}
@@ -371,18 +366,17 @@ const JobPost = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Posting Job...
+                    Updating Job...
                   </div>
                 ) : (
-                  'Post Job'
+                  'Update Job'
                 )}
               </button>
             </div>
           </form>
-        </div>
       </div>
     </div>
   );
 };
 
-export default JobPost;
+export default EditJobModal;

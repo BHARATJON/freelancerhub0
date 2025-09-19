@@ -1,7 +1,8 @@
-import { useState } from 'react'
+
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { Building, MapPin, Globe, Users, Calendar, Plus, X } from 'lucide-react'
+import { Building } from 'lucide-react'
 import api from '../utils/api'
 
 const ProfileSetupCompany = () => {
@@ -14,6 +15,28 @@ const ProfileSetupCompany = () => {
     size: '1-10',
     founded: ''
   })
+  const [isEdit, setIsEdit] = useState(false)
+  useEffect(() => {
+    // Fetch existing profile
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get('/profile/company')
+        if (res.data) {
+          setFormData({
+            name: res.data.name || '',
+            industry: res.data.industry || '',
+            description: res.data.description || '',
+            size: res.data.size || '1-10',
+            founded: res.data.founded ? String(res.data.founded) : ''
+          })
+          setIsEdit(true)
+        }
+      } catch (err) {
+        // No profile exists, stay in create mode
+      }
+    }
+    fetchProfile()
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -26,17 +49,21 @@ const ProfileSetupCompany = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-
     try {
       const profileData = {
         ...formData,
         founded: formData.founded ? parseInt(formData.founded) : undefined
       }
-      await api.post('/profile/company', profileData)
-      toast.success('Company profile created successfully!')
+      if (isEdit) {
+        await api.put('/profile/company', profileData)
+        toast.success('Company profile updated successfully!')
+      } else {
+        await api.post('/profile/company', profileData)
+        toast.success('Company profile created successfully!')
+      }
       navigate('/company/dashboard')
     } catch (error) {
-      toast.error('Failed to create company profile. Please try again.')
+      toast.error('Failed to save company profile. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -48,7 +75,7 @@ const ProfileSetupCompany = () => {
         <div className="card">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Complete Your Company Profile
+              {isEdit ? 'Edit Company Profile' : 'Complete Your Company Profile'}
             </h1>
             <p className="text-gray-600">
               Tell freelancers about your company and what you're looking for
@@ -167,10 +194,10 @@ const ProfileSetupCompany = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Creating Profile...
+                    {isEdit ? 'Saving...' : 'Creating Profile...'}
                   </div>
                 ) : (
-                  'Create Company Profile'
+                  isEdit ? 'Save Changes' : 'Create Company Profile'
                 )}
               </button>
             </div>

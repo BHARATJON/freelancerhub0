@@ -5,6 +5,7 @@ import api from '../utils/api';
 import { useAuthStore } from '../stores/authStore';
 import io from 'socket.io-client';
 import { Paperclip, Download } from 'lucide-react';
+import EditJobModal from '../components/EditJobModal';
 
 
 const Chat = () => {
@@ -18,11 +19,15 @@ const Chat = () => {
   const [finalLoading, setFinalLoading] = useState(false);
   const [finalError, setFinalError] = useState('');
   const [showContractModal, setShowContractModal] = useState(false);
+  const [showEditJobModal, setShowEditJobModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showPayQR, setShowPayQR] = useState(false);
   const [freelancerUpi, setFreelancerUpi] = useState('');
   const [payAmount, setPayAmount] = useState('');
   const [payLoading, setPayLoading] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [progress, setProgress] = useState(0);
+
   // Fetch freelancer UPI and contract amount for payment
   const fetchFreelancerUpiAndAmount = async () => {
     if (!contractForJob?.freelancer) return;
@@ -55,20 +60,25 @@ const Chat = () => {
     setPayLoading(false);
   };
 
+  const fetchContractForJob = async () => {
+    setFinalLoading(true);
+    setFinalError('');
+    try {
+      const res = await api.get(`/contracts/job/${jobId}`);
+      setContractForJob(res.data);
+      setTasks(res.data.tasks || []);
+      setProgress(res.data.progress || 0);
+    } catch (e) {
+      setFinalError('Could not load contract info');
+      setContractForJob(null);
+      setTasks([]);
+      setProgress(0);
+    }
+    setFinalLoading(false);
+  };
+
   // Fetch contract for this job (for modal workflow)
   useEffect(() => {
-    const fetchContractForJob = async () => {
-      setFinalLoading(true);
-      setFinalError('');
-      try {
-        const res = await api.get(`/contracts/job/${jobId}`);
-        setContractForJob(res.data);
-      } catch (e) {
-        setFinalError('Could not load contract info');
-        setContractForJob(null);
-      }
-      setFinalLoading(false);
-    };
     fetchContractForJob();
   }, [jobId]);
   const socketRef = useRef(null);
@@ -227,6 +237,22 @@ const Chat = () => {
     }
   };
 
+  const handleTaskChange = (index) => {
+    const newTasks = [...tasks];
+    newTasks[index].completed = !newTasks[index].completed;
+    setTasks(newTasks);
+  };
+
+  const handleUpdateTasks = async () => {
+    try {
+      const res = await api.put(`/contracts/${contractForJob._id}/tasks`, { tasks });
+      setTasks(res.data.contract.tasks);
+      setProgress(res.data.contract.progress);
+    } catch (error) {
+      console.error('Error updating tasks:', error);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full bg-gray-100 overflow-auto items-start">
       {/* Chat Box (left, 70%) */}
@@ -290,18 +316,31 @@ const Chat = () => {
         >
           View Detail
         </button>
+        {user.role === 'company' && (
+            <button
+                className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded shadow text-lg mb-4"
+                onClick={() => setShowEditJobModal(true)}
+            >
+                Edit Job
+            </button>
+        )}
         {/* Contract and Review Buttons for Company and Freelancer */}
         {user.role === 'company' && (
           <>
             {/* Pay to Freelancer Button */}
             {contractForJob && contractForJob.isFinalized && (
-              <button
-                className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded shadow text-lg mb-2"
-                onClick={fetchFreelancerUpiAndAmount}
-                disabled={payLoading}
-              >
-                {payLoading ? 'Loading...' : 'Pay to Freelancer'}
-              </button>
+              <>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 my-4">
+                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                </div>
+                <button
+                  className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded shadow text-lg mb-2"
+                  onClick={fetchFreelancerUpiAndAmount}
+                  disabled={payLoading}
+                >
+                  {payLoading ? 'Loading...' : 'Pay to Freelancer'}
+                </button>
+              </>
             )}
             {/* Show QR code for payment */}
             {showPayQR && freelancerUpi && payAmount && (
@@ -372,6 +411,28 @@ const Chat = () => {
               View Contract
             </button>
             {contractForJob.isFinalized && (
+              <div className="my-4 w-full">
+                <h3 className="text-lg font-bold mb-2">To-Do List</h3>
+                {tasks.map((task, index) => (
+                  <div key={task._id} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => handleTaskChange(index)}
+                      className="mr-2"
+                    />
+                    <span>{task.name} ({task.weightage}%)</span>
+                  </div>
+                ))}
+                <button
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow"
+                  onClick={handleUpdateTasks}
+                >
+                  Save Changes
+                </button>
+              </div>
+            )}
+            {contractForJob.isFinalized && (
               <button
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded shadow text-lg"
                 onClick={() => {
@@ -393,26 +454,41 @@ const Chat = () => {
       </div> {/* Close right panel div */}
 
       {showContractModal && (
-        !contractForJob ? (
-          <ContractModal jobId={jobId} onClose={() => setShowContractModal(false)} onCreated={() => {
-            setShowContractModal(false);
-            setFinalLoading(true);
-            api.get(`/contracts/job/${jobId}`)
-              .then(res => setContractForJob(res.data))
-              .catch(() => setContractForJob(null))
-              .finally(() => setFinalLoading(false));
-          }} contract={null} />
-        ) : !contractForJob.isFinalized ? (
-          <ContractModal jobId={jobId} onClose={() => setShowContractModal(false)} onCreated={() => {
-            setShowContractModal(false);
-            setFinalLoading(true);
-            api.get(`/contracts/job/${jobId}`)
-              .then(res => setContractForJob(res.data))
-              .catch(() => setContractForJob(null))
-              .finally(() => setFinalLoading(false));
-          }} contract={contractForJob} />
-        ) : (
-          <ViewContractModal contract={contractForJob} onClose={() => setShowContractModal(false)} />
+        user.role === 'company' ? (
+          !contractForJob ? (
+            <ContractModal jobId={jobId} onClose={() => setShowContractModal(false)} onCreated={() => {
+              setShowContractModal(false);
+              setFinalLoading(true);
+              api.get(`/contracts/job/${jobId}`)
+                .then(res => setContractForJob(res.data))
+                .catch(() => setContractForJob(null))
+                .finally(() => setFinalLoading(false));
+            }} contract={null} />
+          ) : !contractForJob.isFinalized ? (
+            <ContractModal jobId={jobId} onClose={() => setShowContractModal(false)} onCreated={() => {
+              setShowContractModal(false);
+              setFinalLoading(true);
+              api.get(`/contracts/job/${jobId}`)
+                .then(res => setContractForJob(res.data))
+                .catch(() => setContractForJob(null))
+                .finally(() => setFinalLoading(false));
+            }} contract={contractForJob} />
+          ) : (
+            <ViewContractModal contract={contractForJob} onClose={() => setShowContractModal(false)} />
+          )
+        ) : ( // user.role === 'freelancer'
+          !contractForJob.isFinalized ? (
+            <ReviewContractModal contract={contractForJob} onClose={() => setShowContractModal(false)} onFinalized={() => {
+              setShowContractModal(false);
+              setFinalLoading(true);
+              api.get(`/contracts/job/${jobId}`)
+                .then(res => setContractForJob(res.data))
+                .catch(() => setContractForJob(null))
+                .finally(() => setFinalLoading(false));
+            }} isViewOnly={false} />
+          ) : (
+            <ViewContractModal contract={contractForJob} onClose={() => setShowContractModal(false)} />
+          )
         )
       )}
       {showReviewModal && contractForJob && (
@@ -424,6 +500,16 @@ const Chat = () => {
             .catch(() => setContractForJob(null))
             .finally(() => setFinalLoading(false));
         }} isViewOnly={user.role === 'freelancer' && contractForJob && contractForJob.isFinalized} />
+      )}
+
+      {showEditJobModal && (
+        <EditJobModal 
+            jobId={jobId} 
+            onClose={() => setShowEditJobModal(false)} 
+            onJobUpdated={() => {
+                fetchContractForJob();
+            }}
+        />
       )}
     </div> 
   );

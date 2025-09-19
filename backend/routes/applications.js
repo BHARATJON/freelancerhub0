@@ -41,6 +41,21 @@ router.post('/apply/:jobId', auth, roleCheck(['freelancer']), async (req, res) =
     job.applications.push(application._id);
     await job.save();
 
+    // Create notification for company
+    const Notification = require('../models/Notification');
+    const User = require('../models/User');
+    const freelancerUser = await User.findById(req.user.id);
+    const notification = new Notification({
+      recipient: job.company,
+      sender: req.user.id,
+      type: 'new_application',
+      title: 'New Job Application',
+      message: `${freelancerUser.name} has applied for your job: "${job.title}"`,
+      relatedApplication: application._id,
+      relatedJob: job._id
+    });
+    await notification.save();
+
     // Notify company via socket
     const io = req.app.get('io');
     io.to(job.company.toString()).emit('new-application', {
@@ -99,6 +114,8 @@ router.put('/status/:id', auth, roleCheck(['company']), async (req, res) => {
     }
     
     const job = await Job.findById(application.job);
+    console.log('Update application status - job.company:', job.company);
+    console.log('Update application status - req.user.id:', req.user.id);
     if (job.company.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }

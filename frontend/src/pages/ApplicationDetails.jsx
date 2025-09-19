@@ -29,6 +29,7 @@ const ApplicationDetails = () => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [showInterviewModal, setShowInterviewModal] = useState(false)
+  const [showContractModal, setShowContractModal] = useState(false);
   const [newStatus, setNewStatus] = useState('')
   const [rejectionReason, setRejectionReason] = useState('')
   const [interviewData, setInterviewData] = useState({
@@ -54,26 +55,44 @@ const ApplicationDetails = () => {
     }
   }
 
-  const handleStatusUpdate = async (e) => {
-    e.preventDefault()
-    setIsUpdatingStatus(true)
+  const onContractCreated = async () => {
+    try {
+        const updateData = { status: 'hired' };
+        await api.put(`/applications/status/${id}`, updateData);
+        toast.success('Application status updated to Hired!');
+        fetchApplicationDetails(); // Refresh the data
+    } catch (error) {
+        toast.error('Failed to update application status after contract creation');
+    }
+}
+
+const handleStatusUpdate = async (e) => {
+    e.preventDefault();
+
+    if (newStatus === 'hired') {
+        setShowStatusModal(false);
+        setShowContractModal(true);
+        return;
+    }
+
+    setIsUpdatingStatus(true);
 
     try {
-      const updateData = { status: newStatus }
-      if (newStatus === 'rejected' && rejectionReason) {
-        updateData.rejectionReason = rejectionReason
-      }
+        const updateData = { status: newStatus };
+        if (newStatus === 'rejected' && rejectionReason) {
+            updateData.rejectionReason = rejectionReason;
+        }
 
-      await api.put(`/applications/status/${id}`, updateData)
-      toast.success('Application status updated successfully!')
-      setShowStatusModal(false)
-      fetchApplicationDetails() // Refresh the data
+        await api.put(`/applications/status/${id}`, updateData);
+        toast.success('Application status updated successfully!');
+        setShowStatusModal(false);
+        fetchApplicationDetails(); // Refresh the data
     } catch (error) {
-      toast.error('Failed to update application status')
+        toast.error('Failed to update application status');
     } finally {
-      setIsUpdatingStatus(false)
+        setIsUpdatingStatus(false);
     }
-  }
+};
 
   const handleScheduleInterview = async (e) => {
     e.preventDefault()
@@ -314,6 +333,7 @@ const ApplicationDetails = () => {
             {/* Job Details */}
             <div className="card">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Job Details</h3>
+.
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600">Job Title</p>
@@ -481,8 +501,70 @@ const ApplicationDetails = () => {
           </div>
         </div>
       )}
+
+      {showContractModal && (
+        <ContractModal
+            jobId={application.job?._id}
+            applicationId={application._id}
+            onClose={() => setShowContractModal(false)}
+            onCreated={() => {
+                setShowContractModal(false);
+                onContractCreated();
+            }}
+            contract={null}
+        />
+    )}
     </div>
   )
 }
 
-export default ApplicationDetails 
+function ContractModal({ jobId, onClose, onCreated, contract, applicationId }) {
+    const [startDate, setStartDate] = useState(contract ? contract.startDate?.slice(0,10) : '');
+    const [endDate, setEndDate] = useState(contract ? contract.endDate?.slice(0,10) : '');
+    const [totalAmount, setTotalAmount] = useState(contract ? contract.totalAmount : '');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+  
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setError('');
+      try {
+        if (contract && contract._id && !contract.isFinalized) {
+          // Edit contract (PUT)
+          await api.put(`/contracts/${contract._id}`, { startDate, endDate, totalAmount });
+        } else {
+          // Create contract (POST)
+          await api.post('/contracts', { applicationId, startDate, endDate, totalAmount });
+        }
+        setSuccess(true);
+        onCreated && onCreated();
+      } catch (err) {
+        setError('Failed to save contract');
+      }
+      setLoading(false);
+    };
+  
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+          <button className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl" onClick={onClose}>&times;</button>
+          <h2 className="text-xl font-bold mb-4">{contract && !contract.isFinalized ? 'Edit Contract' : 'Create Contract'}</h2>
+          {success ? (
+            <div className="text-green-600">Contract saved! Freelancer will be notified.</div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <label>Start Date:<input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className="input-field" /></label>
+              <label>End Date:<input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required className="input-field" /></label>
+              <label>Total Amount:<input type="number" value={totalAmount} onChange={e => setTotalAmount(e.target.value)} required min={1} className="input-field" /></label>
+              <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded mt-2" disabled={loading}>{loading ? (contract && !contract.isFinalized ? 'Saving...' : 'Creating...') : (contract && !contract.isFinalized ? 'Save Changes' : 'Create Contract')}</button>
+              {error && <div className="text-red-500 mt-2">{error}</div>}
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+export default ApplicationDetails

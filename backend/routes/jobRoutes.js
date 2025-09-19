@@ -16,6 +16,8 @@ router.get('/company', auth, roleCheck(['company']), jobController.listCompanyJo
 router.get('/my-jobs', auth, roleCheck(['freelancer']), jobController.getFreelancerJobs);
 // Get job details (public)
 router.get('/:id', jobController.getJobDetails);
+// Update a job (company only)
+router.put('/:id', auth, roleCheck(['company']), jobController.updateJob);
 // Mark a job as completed (company only)
 router.put('/:id/complete', auth, roleCheck(['company', 'freelancer']), jobController.completeJob);
 

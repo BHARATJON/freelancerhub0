@@ -1,6 +1,25 @@
 const mongoose = require('mongoose');
 
+const taskSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  weightage: {
+    type: Number,
+    required: true
+  },
+  completed: {
+    type: Boolean,
+    default: false
+  }
+});
+
 const contractSchema = new mongoose.Schema({
+  contractNumber: {
+    type: String,
+    unique: true,
+  },
   job: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Job',
@@ -39,6 +58,13 @@ const contractSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  tasks: [taskSchema],
+  progress: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  }
   // Removed paymentTerms, status, companySignature, freelancerSignature, milestones, attachments, notes, finalPrice, finalDuration, isFinalized
 }, {
   timestamps: true

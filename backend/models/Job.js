@@ -1,5 +1,24 @@
 const mongoose = require('mongoose');
 
+const modelSchema = new mongoose.Schema({
+  modelName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  modelDescription: {
+    type: String,
+    required: true,
+    maxlength: 5000
+  },
+  modelWeightage: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 100
+  }
+});
+
 const jobSchema = new mongoose.Schema({
   company: {
     type: mongoose.Schema.Types.ObjectId,
@@ -66,6 +85,11 @@ const jobSchema = new mongoose.Schema({
     enum: ['beginner', 'intermediate', 'expert'],
     required: true
   },
+  numberOfModels: {
+    type: Number,
+    default: 0
+  },
+  models: [modelSchema],
   applications: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Application'
@@ -105,6 +129,17 @@ jobSchema.index({
 jobSchema.pre('save', function(next) {
   if (this.applications) {
     this.applicationsCount = this.applications.length;
+  }
+  next();
+});
+
+// Validate that the sum of modelWeightage in models is 100
+jobSchema.pre('save', function(next) {
+  if (this.models && this.models.length > 0) {
+    const totalWeightage = this.models.reduce((acc, model) => acc + model.modelWeightage, 0);
+    if (totalWeightage !== 100) {
+      return next(new Error('The sum of model weightages must be 100.'));
+    }
   }
   next();
 });

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 exports.createJob = async (req, res) => {
   try {
     const {
-      title, description, requirements, skills, budget, duration, experienceLevel
+      title, description, requirements, skills, budget, duration, experienceLevel, numberOfModels, models
     } = req.body;
     if (!title || !description || !requirements || !skills || !budget || !duration || !experienceLevel) {
       return res.status(400).json({ message: 'Missing required fields. Please fill out all required job details.' });
@@ -27,7 +27,9 @@ exports.createJob = async (req, res) => {
       type: 'project',
       location: 'Remote',
       remote: true,
-      experienceLevel
+      experienceLevel,
+      numberOfModels,
+      models
     });
     await job.save();
     res.status(201).json({ message: 'Job posted successfully', job });
@@ -112,7 +114,7 @@ exports.completeJob = async (req, res) => {
       return res.status(404).json({ message: 'Job not found' });
     }
 
-    if (job.company.toString() !== req.user.id) {
+    if (job.company.toString() !== req.user.id && job.hiredFreelancer.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -123,5 +125,41 @@ exports.completeJob = async (req, res) => {
   } catch (error) {
     console.error('Complete job error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.updateJob = async (req, res) => {
+  try {
+    const {
+      title, description, requirements, skills, budget, duration, experienceLevel, numberOfModels, models
+    } = req.body;
+
+    const job = await Job.findById(req.params.id);
+
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    // Check if the user is the company that created the job
+    if (job.company.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'You are not authorized to update this job' });
+    }
+
+    job.title = title || job.title;
+    job.description = description || job.description;
+    job.requirements = requirements || job.requirements;
+    job.skills = skills || job.skills;
+    job.budget = budget || job.budget;
+    job.duration = duration || job.duration;
+    job.experienceLevel = experienceLevel || job.experienceLevel;
+    job.numberOfModels = numberOfModels || job.numberOfModels;
+    job.models = models || job.models;
+
+    await job.save();
+
+    res.status(200).json({ message: 'Job updated successfully', job });
+  } catch (error) {
+    console.error('Job update error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 }; 

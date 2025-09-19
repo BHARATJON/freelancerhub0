@@ -1,17 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { User, MapPin, IndianRupee, Calendar, Briefcase, Plus, X } from 'lucide-react'
+import { User, MapPin, Briefcase, Plus, X } from 'lucide-react'
 import api from '../utils/api'
 
 const ProfileSetupFreelancer = () => {
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -24,6 +17,32 @@ const ProfileSetupFreelancer = () => {
     certifications: [{ name: '', issuer: '', year: '', link: '' }],
     languages: [{ language: '', proficiency: 'conversational' }]
   })
+  const [isEdit, setIsEdit] = useState(false)
+
+  useEffect(() => {
+    // Fetch existing profile
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get('/profile/freelancer')
+        if (res.data) {
+          setFormData({
+            skills: res.data.skills && res.data.skills.length ? res.data.skills : [''],
+            experience: res.data.experience || 'beginner',
+            bio: res.data.bio || '',
+            location: res.data.location || '',
+            upi_id: res.data.upi_id || '',
+            education: res.data.education && res.data.education.length ? res.data.education : [{ degree: '', institution: '', year: '' }],
+            certifications: res.data.certifications && res.data.certifications.length ? res.data.certifications : [{ name: '', issuer: '', year: '', link: '' }],
+            languages: res.data.languages && res.data.languages.length ? res.data.languages : [{ language: '', proficiency: 'conversational' }]
+          })
+          setIsEdit(true)
+        }
+      } catch (err) {
+        // No profile exists, stay in create mode
+      }
+    }
+    fetchProfile()
+  }, [])
 
   // (Removed duplicate addSkill)
 
@@ -63,6 +82,14 @@ const ProfileSetupFreelancer = () => {
     }));
   }
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -73,11 +100,16 @@ const ProfileSetupFreelancer = () => {
         ...formData,
         skills: filteredSkills
       };
-      await api.post('/profile/freelancer', profileData);
-      toast.success('Profile created successfully!');
+      if (isEdit) {
+        await api.put('/profile/freelancer', profileData);
+        toast.success('Profile updated successfully!');
+      } else {
+        await api.post('/profile/freelancer', profileData);
+        toast.success('Profile created successfully!');
+      }
       navigate('/freelancer/dashboard');
     } catch (error) {
-      toast.error('Failed to create profile. Please try again.');
+      toast.error('Failed to save profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +120,7 @@ const ProfileSetupFreelancer = () => {
         <div className="card">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Complete Your Freelancer Profile
+              {isEdit ? 'Edit Freelancer Profile' : 'Complete Your Freelancer Profile'}
             </h1>
             <p className="text-gray-600">
               Tell clients about your skills, experience, and what makes you unique
@@ -270,10 +302,10 @@ const ProfileSetupFreelancer = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Creating Profile...
+                    {isEdit ? 'Saving...' : 'Creating Profile...'}
                   </div>
                 ) : (
-                  'Create Profile'
+                  isEdit ? 'Save Changes' : 'Create Profile'
                 )}
               </button>
             </div>

@@ -49,18 +49,30 @@ router.post('/', auth, roleCheck(['company']), async (req, res) => {
       return res.status(404).json({ message: 'Application not found' });
     }
     const job = await Job.findById(application.job);
+    console.log('job.company:', job.company);
+    console.log('req.user.id:', req.user.id);
     if (job.company.toString() !== req.user.id) {
       console.log('Not authorized: job.company', job.company, 'user', req.user.id);
       return res.status(403).json({ message: 'Not authorized' });
     }
+
+    // Create tasks from job models
+    const tasks = job.models.map(model => ({
+      name: model.modelName,
+      weightage: model.modelWeightage,
+      completed: false
+    }));
+
     const contract = new Contract({
+      contractNumber: `CN-${Date.now()}`,
       job: application.job,
       company: req.user.id,
       freelancer: application.freelancer,
       application: applicationId,
       startDate,
       endDate,
-      totalAmount
+      totalAmount,
+      tasks
     });
     await contract.save();
     // Update application status to hired
@@ -101,7 +113,11 @@ router.put('/:id', auth, roleCheck(['company']), async (req, res) => {
   try {
     const contract = await Contract.findById(req.params.id);
     if (!contract) return res.status(404).json({ message: 'Contract not found' });
-    if (contract.company.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
+    if (contract.company.toString() !== req.user.id) {
+      console.log('Edit contract - contract.company:', contract.company);
+      console.log('Edit contract - req.user.id:', req.user.id);
+      return res.status(403).json({ message: 'Not authorized' });
+    }
     if (contract.isFinalized) return res.status(400).json({ message: 'Cannot edit a finalized contract' });
     const { startDate, endDate, totalAmount } = req.body;
     contract.startDate = startDate;
@@ -161,6 +177,38 @@ router.get('/:id', auth, async (req, res) => {
   } catch (error) {
     console.error('Get contract error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update contract tasks and progress
+router.put('/:id/tasks', auth, roleCheck(['freelancer']), async (req, res) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return res.status(404).json({ message: 'Contract not found' });
+    }
+    if (contract.freelancer.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    if (!contract.isFinalized) {
+      return res.status(400).json({ message: 'Cannot update tasks for a non-finalized contract' });
+    }
+
+    const { tasks } = req.body;
+    contract.tasks = tasks;
+
+    // Calculate progress
+    const completedTasks = contract.tasks.filter(task => task.completed);
+    const totalWeightage = contract.tasks.reduce((acc, task) => acc + task.weightage, 0);
+    const completedWeightage = completedTasks.reduce((acc, task) => acc + task.weightage, 0);
+    contract.progress = totalWeightage > 0 ? (completedWeightage / totalWeightage) * 100 : 0;
+
+    await contract.save();
+
+    res.json({ message: 'Contract tasks updated', contract });
+  } catch (error) {
+    console.error('Update contract tasks error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
